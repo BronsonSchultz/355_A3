@@ -1,0 +1,55 @@
+﻿1.
+Category (CategoryID, CategoryName, Description)
+Tags (TagName)
+ActivityLogs(LogID, UserID, ThreadID, ViewTime)
+Ratings(RatingID, UserID, Rating)
+
+Thread (ThreadID, ThreadName, IsPinned, IsAnnouncement, CreatedOn, PostCount)
+Post (PostID, CreatedOn, ModiﬁedOn, Rating)
+User(UserID,DisplayName,Email,Password,IsBanned,IsModerator,IsAdministrator,RegisteredOn, PostCount) 
+
+3.
+A composite key of post_id and user_id_rating
+
+4.
+
+a)
+post_id -> topic_id
+post_id -> topic_date
+post_id -> post_date
+post_id -> topic
+post_id -> post
+post_id -> category_id
+post_id -> category
+user_id_rating -> user_id
+user_id_rating -> username
+user_id_rating -> email
+post_id,user_id_rating -> rating
+
+b)
+MasterTable(post_id,user_id_rating, topic_id,topic_date,post_date,topic	post,category_id,category,rating,user_id,username,email)
+splits into:
+
+Post(PostID, TopicID, Topic_date, topic, Post_date, Post, CategoryID, category)
+User(User_id, username, email, user_id_rating, rating)
+
+5.
+a)
+within the post table:
+post_id -> topic_id -> topic_date
+post_id -> topic_id -> topic
+post_id -> category_id -> category
+
+ 
+within the post table:
+user_id_rating -> user_id -> username
+user_id_rating -> user_id -> email
+
+b)
+Post(PostID, Post_date, Post, rating)
+Topic(TopicID, Topic_date, Topic)
+Category(CategoryID, Category) 
+User(UserID, Username, Email)
+Rating(RatingID, UserRatingID, Rating)
+
+

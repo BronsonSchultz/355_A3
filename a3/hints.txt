@@ -1,0 +1,13 @@
+part one tables
+
+Category
+	name
+	description
+
+Tags
+activity (log)
+
+
+part two
+3.
+post_id + user_id_rating
