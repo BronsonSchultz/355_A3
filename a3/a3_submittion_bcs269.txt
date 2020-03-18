@@ -63,15 +63,19 @@ CreatedOn DATETIME
 )
 
 // Rating Table
-CREATE TABLE IF NOT EXISTS Rating (
+CREATE TABLE Rating (
 RatingID INTEGER PRIMARY KEY,
 UserRatingID INTEGER REFERENCES User (UserID),
+PostID INTEGER REFERENCES Post (PostID),
 Rating INTEGER CHECK( Rating IN(0,1,-1)),
 FOREIGN KEY (UserRatingID)
 	REFERENCES User(UserID)
+		ON DELETE CASCADE,
+FOREIGN KEY (PostID)
+	REFERENCES Post (PostID)
 		ON DELETE CASCADE
-)
 
+);
 
 // Category Table
 CREATE TABLE IF NOT EXISTS Category (
@@ -109,3 +113,126 @@ FOREIGN KEY (TagName)
 )
 
 7.
+
+
+BEGIN TRANSACTION;
+
+//Category Table Data
+INSERT INTO Category (
+CategoryID,
+CategoryName
+)
+SELECT DISTINCT CategoryID, CategoryName
+FROM temp_table;
+COMMIT;
+
+//Thread Table Data
+INSERT INTO Thread (
+ThreadID,
+ThreadName,
+CategoryID,
+CreatedOn
+)
+SELECT DISTINCT topic_id, topic, CategoryID, topic_date 
+FROM temp_table tt  
+
+
+//User Table Data
+INSERT INTO User (
+UserID,
+DisplayName,
+Email 
+)
+SELECT DISTINCT user_id, username, email
+FROM temp_table tt 
+
+
+// Rating Table Data
+INSERT INTO Rating (
+UserRatingID, 
+PostID,
+Rating
+)
+SELECT DISTINCT user_id_rating, post_id, rating 
+FROM temp_table tt 
+COMMIT;
+
+// Post Table Data
+INSERT INTO Post (
+PostID,
+PostContent,
+CreatedOn,
+ThreadID,
+AuthorUserID 
+
+)
+SELECT DISTINCT post_id, post, post_date, topic_id, user_id 
+FROM temp_table tt 
+
+COMMIT;
+
+8.
+CREATE TRIGGER postModified
+	AFTER UPDATE OF PostContent ON Post
+	BEGIN
+		UPDATE Post
+		SET ModifiedOn = datetime(datetime('now', 'localtime'), 'utc')
+		WHERE Post.PostID = NEW.PostID;
+	END;
+
+9.
+
+//Insert trigger
+CREATE TRIGGER newPost
+	AFTER INSERT ON Post
+	BEGIN
+		UPDATE User
+		SET PostCount = PostCount + 1
+		WHERE User.UserID = NEW.AuthorUserID;
+	
+		UPDATE Thread 
+		SET PostCount = PostCount + 1
+		WHERE Thread.ThreadID = NEW.ThreadID;
+	END;
+
+//Delete Trigger
+CREATE TRIGGER deletedPost
+	AFTER DELETE ON Post
+	BEGIN
+		UPDATE User
+		SET PostCount = PostCount - 1
+		WHERE User.UserID = NEW.AuthorUserID;
+	
+		UPDATE Thread 
+		SET PostCount = PostCount - 1
+		WHERE Thread.ThreadID = NEW.ThreadID;
+	END;
+
+10.
+CREATE TRIGGER deletedRating
+	AFTER DELETE ON Rating
+	BEGIN
+		UPDATE Post
+		SET Rating = Rating - OLD.rating
+		WHERE Post.PostID = OLD.PostID;
+	END;
+	
+
+
+CREATE TRIGGER newRating
+	AFTER INSERT ON Rating
+	BEGIN
+		UPDATE Post
+		SET Rating = Rating + NEW.rating
+		WHERE Post.PostID = NEW.PostID;
+	END;
+
+CREATE TRIGGER updateRating
+	AFTER UPDATE ON Rating
+	BEGIN
+		UPDATE Post
+		SET Rating = Rating + NEW.rating
+		WHERE Post.PostID = NEW.PostID;
+	END;
+	
+
