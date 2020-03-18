@@ -1,6 +1,6 @@
 ﻿1.
 Category (CategoryID, CategoryName, Description)
-Tags (TagName)
+Tags(TagName)
 ActivityLogs(LogID, UserID, ThreadID, ViewTime)
 Ratings(RatingID, UserID, Rating)
 
@@ -46,10 +46,66 @@ user_id_rating -> user_id -> username
 user_id_rating -> user_id -> email
 
 b)
-Post(PostID, Post_date, Post, rating)
-Topic(TopicID, Topic_date, Topic)
+Post(PostID, Post_date, Post, rating) 
+Thread(ThreadID, ThreadName, IsPinned, IsAnnouncement, CreatedOn, PostCount, CategoryID) 
+Topic(TopicID, Topic_date, Topic) 
 Category(CategoryID, Category) 
-User(UserID, Username, Email)
-Rating(RatingID, UserRatingID, Rating)
+User(UserID, Username, Email) 
+Rating(RatingID, UserRatingID, Rating) 
 
 
+6.
+// Tags table
+CREATE TABLE IF NOT EXISTS Tags (
+Tagname TEXT PRIMARY KEY,
+Description TEXT,
+CreatedOn DATETIME
+)
+
+// Rating Table
+CREATE TABLE IF NOT EXISTS Rating (
+RatingID INTEGER PRIMARY KEY,
+UserRatingID INTEGER REFERENCES User (UserID),
+Rating INTEGER CHECK( Rating IN(0,1,-1)),
+FOREIGN KEY (UserRatingID)
+	REFERENCES User(UserID)
+		ON DELETE CASCADE
+)
+
+
+// Category Table
+CREATE TABLE IF NOT EXISTS Category (
+CategoryID INTEGER PRIMARY KEY,
+CategoryName TEXT NOT NULL UNIQUE,
+Description TEXT
+)
+
+
+//Activity Log Table
+CREATE TABLE IF NOT EXISTS ActivityLog (
+LogID INTEGER PRIMARY KEY,
+UserID INTEGER REFERENCES User (UserID),
+ThreadID INTEGER REFERENCES Thread (ThreadID),
+ViewTime DATETIME NOT NULL
+)
+
+//ThreadTags Table
+// DBeaver gave me some trouble enforcing the foreign key constraints so I wrote 
+// them (reduntantely) at the table and column level and it worked
+
+PRAGMA foreign_keys = ON;
+CREATE TABLE ThreadTags (
+ThreadTagsID INTEGER PRIMARY KEY,
+ThreadID INTEGER REFERENCES Thread (ThreadID),
+TagName TEXT REFERENCES Tags (TagName),
+
+FOREIGN KEY (ThreadID)
+	REFERENCES Thread(ThreadID)
+		ON DELETE CASCADE,
+
+FOREIGN KEY (TagName)
+	REFERENCES Tags(TagName)
+		ON DELETE CASCADE
+)
+
+7.
